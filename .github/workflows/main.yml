@@ -34,6 +34,8 @@ jobs:
     needs: build
 
     steps:
+      - name: safe dirctory
+        run: git config --global --add safe.directory $(pwd)
       - name: Commit changes
         if: success()
         run: |
