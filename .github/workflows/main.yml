@@ -28,16 +28,9 @@ jobs:
         with:
           path: ./
 
-  pdf-push:
-    runs-on: ubuntu-latest
-    timeout-minutes: 5
-    needs: build
-
-    steps:
-      - name: safe dirctory
-        run: git config --global --add safe.directory $(pwd)
       - name: ls
         run: ls -l
+
       - name: Commit changes
         if: success()
         run: |
