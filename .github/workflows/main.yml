@@ -14,43 +14,11 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  conversion-and-commit:
+  build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: '24'
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Create output directory
-        run: mkdir -p output/pdf
-
-      - name: Install Japanese fonts
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y fonts-noto-cjk
-
-      - name: Convert all md to pdf
-        run: |
-          for file in 202606/*.md; do
-            filename=$(basename "$file" .md)
-            npx marp "$file" --pdf --verbose
-            mv "202606/${filename}.pdf" "output/pdf/${filename}.pdf"
-          done
-
-      - name: List PDF files
-        run: ls -la output/pdf
-
-      - name: Commit changes
-        if: success()
-        run: |
-          git config --local user.email "action@github.com"
-          git config --local user.name "GitHub Action"
-          git add output/pdf/*.pdf
-          git status
-          git diff --quiet && git diff --staged --quiet || (git commit -m "Update pdf" && git push)
+      - run: npm ci
