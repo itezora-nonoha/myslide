@@ -1,5 +1,4 @@
-name: Publish example slides to GitHub Pages
-
+name: Publish GitHub Pages
 on:
   push:
     branches:
@@ -16,9 +15,30 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
+    timeout-minutes: 5
+
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+
+      - name: Convert Markdown into HTML and PDF
+        uses: KoharaKazuya/marp-cli-action@v4
+
+      - name: Uploade artifact
+        uses: actions/upload-pages-artifact@v3
         with:
-          node-version: '24'
-      - run: npm ci
+          path: ./
+
+  pdf-push:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    needs: build
+
+    steps:
+      - name: Commit changes
+        if: success()
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add *.pdf
+          git status
+          git diff --quiet && git diff --staged --quiet || (git commit -m "Update pdf" && git push)
