@@ -1,29 +1,25 @@
-name: Publish GitHub Pages
+name: Convert Markdown into PDF
 on:
-  workflow_dispatch:
   push:
     branches:
       - main
+  workflow_dispatch:
 
 jobs:
   publish:
     runs-on: ubuntu-latest
-    timeout-minutes: 5
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v3
+
+      - name: Convert Markdown into PDF
+        uses: KoharaKazuya/marp-cli-action@v2
         with:
-          node-version: '24'
-      - name: Cache dependencies
-        uses: actions/cache@v4
+          config-file: ./.marprc-ci.yml
+          generate-html: true
+          generate-pdf: true
+
+      - name: Save outputs
+        uses: actions/upload-artifact@v2
         with:
-          path: ~/.npm
-          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-node-
-      - run: npm ci
-      - run: npm run build
-      - uses: peaceiris/actions-gh-pages@v4
-        with:
-          deploy_key: ${{ secrets.ACTIONS_DEPLOY_KEY }}
-          publish_dir: ./public
+          name: public
+          path: ./public
