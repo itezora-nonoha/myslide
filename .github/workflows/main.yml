@@ -31,8 +31,19 @@ jobs:
       - name: ls
         run: ls -l
 
+      - uses: actions/create-github-app-token@v3
+        id: app-token
+        with:
+          client-id: ${{ vars.APP_CLIENT_ID }}
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
+      - uses: ./actions/staging-tests
+        with:
+          token: ${{ steps.app-token.outputs.token }}
+  
       - name: Commit changes
         if: success()
+        env:
+          ACCESS_TOKEN: ${{ steps.app-token.outputs.token }}
         run: |
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
