@@ -1,0 +1,23 @@
+name: Publish GitHub Pages
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  auto-format:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/create-github-app-token@v3
+        id: app-token
+        with:
+          # required
+          client-id: ${{ vars.APP_CLIENT_ID }}
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
+      - uses: actions/checkout@v6
+        with:
+          token: ${{ steps.app-token.outputs.token }}
+          ref: ${{ github.head_ref }}
+          # Make sure the value of GITHUB_TOKEN will not be persisted in repo's config
+          persist-credentials: false
