@@ -1,0 +1,49 @@
+name: Publish GitHub Pages
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Convert Markdown into HTML and PDF
+        uses: KoharaKazuya/marp-cli-action@v4
+
+      - name: Uploade artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: ./
+
+      - name: ls
+        run: ls -l
+
+      - uses: actions/create-github-app-token@v3
+        id: app-token
+        with:
+          client-id: ${{ vars.APP_CLIENT_ID }}
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
+  
+      - name: Commit changes
+        if: success()
+        env:
+          ACCESS_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add ./*.pdf
+          git status
+          git diff --quiet && git diff --staged --quiet || (git commit -m "Update pdf" && git push)
